@@ -88,6 +88,18 @@ void Hash::displayHash() {
     }
 }
 
+void ShowRecords() {
+    string line;
+    ifstream data;
+    data.open("data.txt");
+    system("CLS");
+    cout << endl;
+    while (getline(data, line)) {
+        cout << line << endl;
+    }
+    cout << endl;
+    data.close();
+}
 
 
 
@@ -112,33 +124,30 @@ int main()
         string id(line.begin(), line.begin() + line.find(" "));
         HashTable.insertItem(stoi(id));
     }
+    data.close();
 
     do
     {
         cout << "Select operation to do: \n 1-Show records \n 2-Show HashTable \n 3-Make a query \n 4-EXIT \n Option: ";
         cin >> option;
         if (option == 1) {
-            ifstream data;
-            data.open("data.txt");
-            while (getline(data, line)) {
-                cout << line << endl;
-            }
+            ShowRecords();
+            cin.get();
         }
         else if (option == 2) {
             cout << "---------- HashTable ---------- \n";
             HashTable.displayHash();
             cout << "------------------------------- \n";
-
+            cin.get();
         }
         else if (option == 3) {
+            system("CLS");
+            ShowRecords();
+            cout << endl;
             cout << "Select query type: \n 1-Insert \n 2-Delete \n 3-Update \n Option: ";
             cin >> option;
 
-            //create file
-            /*ofstream myfile;
-            myfile.open("data.txt",ios::out | ios::app);*/
-
-
+            
 
             if (option == 1) {
                 //Insert
@@ -165,6 +174,7 @@ int main()
                 Insert(record, "data.txt");
                 cout << record << endl;
                 record = "";
+                cin.get();
             }
             else if (option == 2) {
                 string d_id;
@@ -237,8 +247,12 @@ int main()
                 remove("data.txt");
                 rename("temp.txt", "data.txt");
             }
+            cin.get();
+            system("CLS");
         }
-        system("pause");
+        cin.get();
+        system("CLS");
+
     }//end of do
     while (option != 4);
 }
