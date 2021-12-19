@@ -8,23 +8,6 @@
 #define TEXT_FILE_PATH "data/data.txt"
 using namespace std;
 
-void Insert(string txt, string filepath) {
-    ofstream myfile;
-    myfile.open(filepath, ios::out | ios::app);
-    myfile << "\n" + txt;
-    myfile.close();
-}
-int getNoLines() {
-    int number_of_lines = 0;
-    string line;
-    ifstream myfile("data.txt");
-
-    while (getline(myfile, line))
-        ++number_of_lines;
-    return number_of_lines;
-}
-
-
 class Hash
 {
     int BUCKET;    // No. of buckets
@@ -45,6 +28,7 @@ public:
         return (x % BUCKET);
     }
 
+    void ClearTable();
     void displayHash();
 };
 
@@ -78,6 +62,7 @@ void Hash::deleteItem(int key)
         table[index].erase(i);
 }
 
+
 // function to display hash table
 void Hash::displayHash() {
     for (int i = 0; i < BUCKET; i++) {
@@ -88,24 +73,69 @@ void Hash::displayHash() {
     }
 }
 
+//insert into file
+void Insert(string txt, string filepath) {
+    ofstream myfile;
+    myfile.open(filepath, ios::out | ios::app);
+    myfile << "\n" + txt;
+    myfile.close();
+}
+
+//get number of lines in file
+int getNoLines() {
+    int number_of_lines = 0;
+    string line;
+    ifstream myfile("data.txt");
+
+    while (getline(myfile, line))
+        ++number_of_lines;
+    return number_of_lines;
+}
+
+//display records in file
 void ShowRecords() {
     string line;
     ifstream data;
     data.open("data.txt");
     system("CLS");
-    cout << endl;
+    cout << "******** Records ********\n";
     while (getline(data, line)) {
         cout << line << endl;
     }
-    cout << endl;
+    cout <<"*************************\n";
     data.close();
 }
 
-
+//check Record availability
+bool ChechReocrd(string d_id) {
+    bool found = false;
+    string line;
+    ifstream data;
+    data.open("data.txt");
+    while (getline(data, line)) {
+        string id(line.begin(), line.begin() + line.find(" "));
+        if (id == d_id) {
+            found = true;
+            break;
+        }
+    }
+    data.close();
+    return found;
+}
+bool valid(int option) {
+    bool valid = false;
+    if (option > 0 && option < 5) {
+        valid = true;
+    }
+    else {
+        valid = false;
+    }
+    return valid;
+}
 
 int main()
 {
-    int option;
+    char option;
     int id;
     string FName;
     string LName;
@@ -113,9 +143,10 @@ int main()
     string record = "";
     string line;
 
+    //open file and create HashTable
     ifstream data;
     data.open("data.txt");
-    Hash HashTable(getNoLines() - 1);
+    Hash HashTable(10);
     int i = 0;
     while (getline(data, line)) {
         if (i == 0) {
@@ -130,17 +161,23 @@ int main()
     {
         cout << "Select operation to do: \n 1-Show records \n 2-Show HashTable \n 3-Make a query \n 4-EXIT \n Option: ";
         cin >> option;
-        if (option == 1) {
+        
+        if (option < '1' || option >'4') {
+            cout << "\n * **WARNING * **\n Enter valid option \n\n";
+            continue;
+        }
+
+        if (option == '1') {
             ShowRecords();
             cin.get();
         }
-        else if (option == 2) {
+        else if (option == '2') {
             cout << "---------- HashTable ---------- \n";
             HashTable.displayHash();
             cout << "------------------------------- \n";
             cin.get();
         }
-        else if (option == 3) {
+        else if (option == '3') {
             system("CLS");
             ShowRecords();
             cout << endl;
@@ -149,7 +186,7 @@ int main()
 
             
 
-            if (option == 1) {
+            if (option == '1') {
                 //Insert
                 ifstream data;
                 data.open("data.txt");
@@ -163,7 +200,7 @@ int main()
                 cout << "Enter GPA: ";
                 cin >> GPA;
 
-                string lastID;
+                string lastID;//store the last id in record for no collision
                 while (getline(data, line)) {
                     string id(line.begin(), line.begin() + line.find(" "));
                     lastID = id;
@@ -172,80 +209,95 @@ int main()
                 str_id = to_string(nlastID);
                 record += str_id + "  " + FName + "  " + LName + "  " + to_string(GPA);
                 Insert(record, "data.txt");
+                HashTable.insertItem(nlastID);//insert in hashtable
                 cout << record << endl;
                 record = "";
                 cin.get();
             }
-            else if (option == 2) {
+            else if (option == '2') {
+                //delete
                 string d_id;
                 cout << "Enter ID you want to DELETE: ";
                 cin >> d_id;
-                //check if id is available or not ;
 
-
+                if (ChechReocrd(d_id) == true) {
                 ifstream data;
                 data.open("data.txt");
                 ofstream temp;
                 temp.open("temp.txt", ios::out | ios::app);
 
                 int tempno = 0;
-                while (getline(data, line)) {
-                    string id(line.begin(), line.begin() + line.find(" "));
-                    if (id != d_id && tempno == (getNoLines() - 2)) {
-                        temp << line;
+                    while (getline(data, line)) {
+                        string id(line.begin(), line.begin() + line.find(" "));
+                        if (id != d_id && tempno == (getNoLines() - 2)) {
+                            temp << line;
+                        }
+                        else if (id != d_id) {
+                            temp << line << endl;
+                            tempno++;
+                        }
+
                     }
-                    else if (id != d_id) {
-                        temp << line << endl;
-                        tempno++;
-                    }
+                    HashTable.deleteItem(stoi(d_id));
+                    data.close();
+                    temp.close();
+                    remove("data.txt");
+                    rename("temp.txt", "data.txt");
+                    cout << "Record Deleted Successfully \n";
+                    cin.get();
                 }
-                data.close();
-                temp.close();
-                remove("data.txt");
-                rename("temp.txt", "data.txt");
+                else {
+                    cout << "Record not available \n";
+                    cin.get();
+                }
             }
-            else if (option == 3) {
+            else if (option == '3') {
                 string line, update_id;
-                ifstream data;
-                data.open("data.txt");
-                ofstream temp;
-                temp.open("temp.txt", ios::out | ios::app);
 
                 cout << "Enter ID you want to Update: ";
                 cin >> update_id;
-                string newFname, newLname, newGPA;
-                cout << "Enter new First Name: ";
-                cin >> newFname;
-                cout << "Enter new Last Name: ";
-                cin >> newLname;
-                cout << "Enter new GPA: ";
-                cin >> newGPA;
+                if (ChechReocrd(update_id) == true) {//check availability of record
+                    ifstream data;
+                    data.open("data.txt");
+                    ofstream temp;
+                    temp.open("temp.txt", ios::out | ios::app);
+                    string newFname, newLname, newGPA;
+                    cout << "Enter new First Name: ";
+                    cin >> newFname;
+                    cout << "Enter new Last Name: ";
+                    cin >> newLname;
+                    cout << "Enter new GPA: ";
+                    cin >> newGPA;
 
-                int tempno = 0;
-                record = "";
-                while (getline(data, line)) {
-                    string id(line.begin(), line.begin() + line.find(" "));
-                    if (id != update_id && tempno == (getNoLines() - 2) && data.eof()) {
-                        temp << line;
+                    int tempno = 0;
+                    record = "";
+                    while (getline(data, line)) {
+                        string id(line.begin(), line.begin() + line.find(" "));
+                        if (id != update_id && tempno == (getNoLines() - 2) && data.eof()) {
+                            temp << line;
+                        }
+                        else if (id != update_id) {
+                            temp << line << endl;
+                            tempno++;
+                        }
+                        else if (id == update_id && tempno == (getNoLines() - 2) && data.eof()) {
+                            record += update_id + "  " + newFname + "  " + newLname + "  " + newGPA;
+                            temp << record;
+                        }
+                        else if (id == update_id) {
+                            record += update_id + "  " + newFname + "  " + newLname + "  " + newGPA;
+                            temp << record << endl;
+                            tempno++;
+                        }
                     }
-                    else if (id != update_id) {
-                        temp << line << endl;
-                        tempno++;
-                    }
-                    else if (id == update_id && tempno == (getNoLines() - 2) && data.eof()) {
-                        record += update_id + "  " + newFname + "  " + newLname + "  " + newGPA;
-                        temp << record;
-                    }
-                    else if (id == update_id) {
-                        record += update_id + "  " + newFname + "  " + newLname + "  " + newGPA;
-                        temp << record << endl;
-                        tempno++;
-                    }
+                    data.close();
+                    temp.close();
+                    remove("data.txt");
+                    rename("temp.txt", "data.txt");
+                    cout << "Record Updated";
+                    cin.get();
                 }
-                data.close();
-                temp.close();
-                remove("data.txt");
-                rename("temp.txt", "data.txt");
+                else { cout << "Wrong ID"; cin.get(); }
             }
             cin.get();
             system("CLS");
@@ -254,5 +306,5 @@ int main()
         system("CLS");
 
     }//end of do
-    while (option != 4);
+    while (option != '4' );
 }
