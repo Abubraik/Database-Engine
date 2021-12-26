@@ -97,19 +97,6 @@ int getNoLines() {
     return number_of_lines;
 }
 
-//display records in file
-void ShowRecords() {
-    string line;
-    ifstream data;
-    data.open("data.txt");
-    system("CLS");
-    cout << "******** Records ********\n";
-    while (getline(data, line)) {
-        cout << line << endl;
-    }
-    cout << "*************************\n";
-    data.close();
-}
 
 //check Record availability
 bool ChechReocrd(string d_id) {
@@ -127,16 +114,7 @@ bool ChechReocrd(string d_id) {
     data.close();
     return found;
 }
-bool valid(int option) {
-    bool valid = false;
-    if (option > 0 && option < 5) {
-        valid = true;
-    }
-    else {
-        valid = false;
-    }
-    return valid;
-}
+
 void Webhead() {
     cout << "Content-type:text/html\r\n\r\n";
     cout << "<html>\n";
@@ -158,7 +136,7 @@ void Webhead() {
 
     data.close();
 }
-void searchString(vector<string>&l, string s, string delim) {
+void searchString(vector<string>& l, string s, string delim) {
     size_t pos = 0;
     string token1;
     while ((pos = s.find(delim)) != std::string::npos)
@@ -220,6 +198,7 @@ void DeletefromForm(string ID, Hash HashTable) {
         remove("data.txt");
         rename("temp.txt", "data.txt");
     }
+    else cout << "<b> Enter valid ID</b>";
 }
 
 void UpdatefromForm(string ID, string Fname, string Lname, string GPA) {
@@ -258,6 +237,7 @@ void UpdatefromForm(string ID, string Fname, string Lname, string GPA) {
         remove("data.txt");
         rename("temp.txt", "data.txt");
     }
+    else cout << "<b> Enter valid ID</b>";
 }
 void ShowHashTable(Hash HashTable) {
     cout << "<div style=\"text-align: center; \">\n";
@@ -290,7 +270,7 @@ int main()
     Webhead();
     //insert
     cout << "<div style=\"text-align: center; \">\n";
-    cout << "<form action = \"DatabaseEngine.cgi\" method = \"get\">";
+    cout << "<form action = \"DatabaseEngine.cgi\" onsubmit=\"setTimeout(function() { window.location.reload(); }, 10); \" method = \"get\">";
     cout << "<h1>Select Query Type</h1>";
     cout << "</div>";
     cout << "<input type=\"radio\" name=\"option\" value=\"Insert\" />Insert </br>\n";
@@ -300,13 +280,13 @@ int main()
     cout << "<input type=\"submit\" value=\"Query\" style=\"margin: 4px; \"> </br></br> \n";
     cout << "</form>";
     //delete
-    cout << "<form action = \"DatabaseEngine.cgi?\" method = \"get\" \n>";
+    cout << "<form action = \"DatabaseEngine.cgi?\" onsubmit=\"setTimeout(function() { window.location.reload(); }, 10); \" method = \"get\" \n>";
     cout << "<input type=\"radio\" name=\"option\" value=\"Delete\" />Delete </br>";
     cout << "Enter ID <input type=\"text\" name=\"ID\"/> </br> \n";
     cout << "<input type=\"submit\" value=\"Query\" style=\"margin: 4px; \"> </br></br> \n";
     cout << "</form>";
     //upadate
-    cout << "<form action = \"DatabaseEngine.cgi?\" method = \"get\">";
+    cout << "<form action = \"DatabaseEngine.cgi?\" onsubmit=\"setTimeout(function() { window.location.reload(); }, 10); \" method = \"get\">";
     cout << "<input type=\"radio\" name=\"option\" value=\"Update\" />Update </br>";
     cout << "Enter ID <input type=\"text\" name=\"ID\"/> \n";
     cout << "Enter First Name: <input type = \"text\" name=\"Fname\" /> \n";
@@ -335,19 +315,19 @@ int main()
         searchString(list2, list1[i], "=");
     }
     bool cdash = false;
+    for (int i = 0; i < list2.size(); i++) {
+        if (list2[i] == "" && list2.size() > 2) {
+            cdash = true;
+        }
+    }
+    if (cdash == true) {
         for (int i = 0; i < list2.size(); i++) {
-            if (list2[i] == "" && list2.size()>2) {
-                cdash = true;
+            if (list2[i] == "") {
+                list2.erase(list2.begin() + i);
             }
         }
-        if (cdash == true) {
-            for (int i = 0; i < list2.size(); i++) {
-                if (list2[i] == "") {
-                    list2.erase(list2.begin() + i);
-                }
-            }
-        }
-    
+    }
+
     if (list2[0] == "option" && list2[1] == "Insert" && list2.size() == 8) {
 
         InsertfromForm(list2[3], list2[5], list2[7], HashTable);
@@ -363,13 +343,7 @@ int main()
     else if (list2[0] == "option" && list2[1] == "HashTable") {
         ShowHashTable(HashTable);
     }
-  /*  cout << list2.size() << endl;
-    
-    cout << list2.size() << endl;
-    for (int i = 0; i < list2.size(); i++) {
-        cout << list2[i] << endl;
-    }
-  */
-            cout << "</body>\n";
-            cout << "</html>\n";
+
+    cout << "</body>\n";
+    cout << "</html>\n";
 }
