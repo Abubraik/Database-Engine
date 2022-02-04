@@ -1,6 +1,6 @@
 **
 
-## Tiny File-bases Database Engine with CGI
+## Tiny File-based Database Engine with CGI
 
 **
 
